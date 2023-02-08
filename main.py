@@ -15,14 +15,19 @@ if __name__ == "__main__":
     health = lidar.get_health()
     print("health :", health)
 
+    samplerate = lidar.get_samplerate()
+    print("samplerate :", samplerate)
+    
     
     
     # pygame init
     pygame.init()
     
-    width = 900
-    height = 600
+    width = 1200
+    height = 900
     screen = pygame.display.set_mode((width,height))
+    
+    blue = (0,0,255)
 
     clock = pygame.time.Clock()
     
@@ -30,12 +35,12 @@ if __name__ == "__main__":
     buffer = []#buffer with x and y coordinates
     
     try:
-        lidar.set_motor_pwm(800)
+        lidar.set_motor_pwm(660)
         time.sleep(2)
     
-        scan_generator = lidar.start_scan_express(4) #4 stability mode - ultracapsuled data
+        scan_generator = lidar.start_scan_express(0)
         
-        for scan in scan_generator():
+        for count,scan in enumerate(scan_generator()):
             
             for event in pygame.event.get():            
                 if event.type == pygame.QUIT:
@@ -55,17 +60,16 @@ if __name__ == "__main__":
                 
                 buffer.append((x,y)) #add angle,distance to buffer
                     
-                if len(buffer) > 720:          #pop out the oldest angle,distance
-                    buffer.pop(0) 
-            
-            #print(buffer)
-            screen.fill((255,255,255))          #white background
-                
-            for x,y in buffer:
-                pygame.draw.circle(screen,(0,0,255),(int((width/2)+x),int((height/2)+y)),1)    
+                if (count % 720) == 0:
                     
-            pygame.display.update()
-            clock.tick(60)
+                    screen.fill((255,255,255))          #white background
+                    
+                    for x,y in buffer:
+                        pygame.draw.circle(screen,blue,(int((width/2)+x),int((height/2)+y)),1)    
+                    
+                    pygame.display.update()
+                    buffer = []
+                
      
     except KeyboardInterrupt:               # ctrl-c
         
