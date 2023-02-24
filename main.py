@@ -93,6 +93,13 @@ if __name__ == "__main__":
                 state = "default"
             
             if scan_button.draw(screen):
+                lidar = PyRPlidar()
+                lidar.connect(port="/dev/ttyUSB0", baudrate=256000  , timeout=3)
+                                
+                lidar.set_motor_pwm(660)
+                time.sleep(2)
+                                
+                scan_generator = lidar.start_scan_express(0)
                 state = "scan"
             
             for x,y in default_coordinates:
@@ -102,47 +109,37 @@ if __name__ == "__main__":
             
         if state == "scan":
             
-            try:
-                lidar = PyRPlidar()
-                lidar.connect(port="/dev/ttyUSB0", baudrate=256000  , timeout=3) 
-    
-                scan_coordinates = []
-                                
-                lidar.set_motor_pwm(660)
-                time.sleep(2)
-                                
-                scan_generator = lidar.start_scan_express(0)
-                                
-                for scan in scan_generator():
-                    
-                    angle = scan.angle
-                    distance = scan.distance
-                                
-                    scale = 15
-                                    
-                    x = int((distance * cos(angle * pi/180)) / scale)
-                    y = int((distance * sin(angle * pi/180)) / scale)
-                                    
-                    scan_coordinates.append((x,y))
-                                    
-                    if len(scan_coordinates) == 720:
-                        
-                        screen.fill(black)
-                        home_button.draw(screen)
-                        
-                        for x,y in scan_coordinates:
-                            pygame.draw.circle(screen,white,(int((width/2)+x),int((height/2)+y)),1) 
-                            
-                        pygame.display.update()
-                        scan_coordinates = []
-                    
-        
-            except KeyboardInterrupt:
+            screen.fill(black)
+            
+            scan_coordinates = []
                 
+            for scan in scan_generator():
+                    
+                angle = scan.angle
+                distance = scan.distance
+                                
+                scale = 15
+                                    
+                x = int((distance * cos(angle * pi/180)) / scale)
+                y = int((distance * sin(angle * pi/180)) / scale)
+                                    
+                scan_coordinates.append((x,y))
+                                    
+                if len(scan_coordinates) == 720:
+                        
+                    break
+                    
+            for x,y in scan_coordinates:
+                pygame.draw.circle(screen,white,(int((width/2)+x),int((height/2)+y)),1) 
+            
+            if home_button.draw(screen):
                 lidar.stop()
                 lidar.set_motor_pwm(0)
                 lidar.disconnect()
                 state = "default"
+                
+            pygame.display.update()
+                    
             
                 
         for event in pygame.event.get():
