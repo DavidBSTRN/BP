@@ -176,32 +176,43 @@ if __name__ == "__main__":
                                 base_coordinates.append((base_angle,new_base_distance))
                     #after 720 iters    
                     if count == 720:
-                        
-                        base_coordinates = sorted(base_coordinates, key = lambda tup: tup[0])#sorted coords low to high
-                        base_print = [(int(r * cos(radians(fi))),int(r * sin(radians(fi)))) for (fi,r) in base_coordinates]#kartezians cause of print
-                        
-                        round_coords = [round_half(coord) for coord in base_coordinates]#round coord to the closest half
-                        #take list of tuples, do average of R for values with same Fi and create new list with lookes like [(fi1,r1),(fi2,r)...] 
-                        base_sort_coordinates = []
-                        prev_fi = None
-                        sum_r = 0
-                        num_r = 0
-                        
-                        for fi,r in round_coords:
-                            if fi != prev_fi:
-                                if prev_fi is not None:
-                                    average_r = sum_r / num_r
-                                    base_sort_coordinates.append((prev_fi,average_r))
-                                
-                                prev_fi = fi
-                                sum_r = r
-                                num_r = 1
-                            else:
-                                sum_r += r
-                                num_r += 1
-                        #base distances - MOZNA PREDELAT
-                        base_distance = [r for (fi,r) in base_sort_coordinates]
                         break
+                base_list = [(x/2,240) for x in range(0,720)]#full angle list
+                        #print(base_list)
+                base_coordinates = sorted(base_coordinates, key = lambda tup: tup[0])#sorted coords low to high
+                base_print = [(int(r * cos(radians(fi))),int(r * sin(radians(fi)))) for (fi,r) in base_coordinates]#kartezians cause of print
+                        
+                round_coords = [round_half(coord) for coord in base_coordinates]#round coord to the closest half
+                        #take list of tuples, do average of R for values with same Fi and create new list with lookes like [(fi1,r1),(fi2,r)...] 
+                base_sort_coordinates = []
+                prev_fi = None
+                sum_r = 0
+                num_r = 0
+                        
+                for fi,r in round_coords:
+                    if fi != prev_fi:
+                        if prev_fi is not None:
+                            average_r = sum_r / num_r
+                            base_sort_coordinates.append((prev_fi,average_r))
+                                
+                        prev_fi = fi
+                        sum_r = r
+                        num_r = 1
+                    else:
+                        sum_r += r
+                        num_r += 1
+                        
+                #print(base_sort_coordinates)
+                #change dist in tuples with same angle
+                diction = dict(base_sort_coordinates)
+                for i, dist in enumerate(base_list):
+                    if dist[0] in diction:
+                        base_list[i] = (dist[0],diction[dist[0]])                        
+                #print(base_list)
+                        #base distances - MOZNA PREDELAT
+                base_distance = [r for (fi,r) in base_list]
+                #print(base_distance)
+                scan_list = [(x/2,240) for x in range(0,720)]
                 #stop scna and go next
                 lidar.stop()
                 lidar.set_motor_pwm(0)
@@ -307,63 +318,56 @@ if __name__ == "__main__":
                     if fourth_quadrant == False:
                         if 270 <= angle <= 360:
                             scan_coordinates.append((angle,new_distance))
-                #sorting     
-                if count == 720:
-                    sort_scan_coordinates = sorted(scan_coordinates, key = lambda tup: tup[0])
-                    scan_print = [(int(r * cos(radians(fi))),int(r * sin(radians(fi)))) for (fi,r) in sort_scan_coordinates]
-                
-                    round_scan_coords = [round_half(coord) for coord in sort_scan_coordinates]
-                
-                    new_scan_coordinates = []
-                    prev_scan_fi = None
-                    sum_scan_r = 0
-                    num_scan_r = 0
-                
-                    for fi,r in round_scan_coords:
-                        if fi != prev_scan_fi:
-                            if prev_scan_fi is not None:
-                                average_scan_r = sum_scan_r / num_scan_r
-                                new_scan_coordinates.append((prev_scan_fi,average_scan_r))
-                        
-                            prev_scan_fi = fi
-                            sum_scan_r = r
-                            num_scan_r = 1
-                        else:
-                            sum_scan_r += r
-                            num_scan_r += 1
                             
-                    new_distance = [r for (fi,r) in new_scan_coordinates]
-                    
+                if count == 720:
                     break
-            #change detection - PREDELAT CELE
-            dif_count = 0
-            
-            if len(base_distance) <= len(new_distance):
-                for i in range(len(base_distance)):
-                    if abs(new_distance[i] - base_distance[i]) > 10 :
-                        dif_count += 1
-                    else:
-                        dif_count = 0
-            else:
-                for k in range(len(new_distance)):
-                    if abs(new_distance[k] - base_distance[k]) > 10:
-                        dif_count += 1
-                    else:
-                        dif_count = 0  
-                                      
-            if dif_count > 5:
-                new_object = True
-            else:
-                new_object = False
-            
-            if new_object == False:
+            #sort        
+            sort_scan_coordinates = sorted(scan_coordinates, key = lambda tup: tup[0])
+            scan_print = [(int(r * cos(radians(fi))),int(r * sin(radians(fi)))) for (fi,r) in sort_scan_coordinates]
+
+            round_scan_coords = [round_half(coord) for coord in sort_scan_coordinates]
                 
-                for x,y in base_print:
-                    pygame.draw.circle(screen,white,(int((width/2)+x),int((height/2)+y)),1) 
-            else:
+            new_scan_coordinates = []
+            prev_scan_fi = None
+            sum_scan_r = 0
+            num_scan_r = 0
                 
+            for fi,r in round_scan_coords:
+                if fi != prev_scan_fi:
+                    if prev_scan_fi is not None:
+                        average_scan_r = sum_scan_r / num_scan_r
+                        new_scan_coordinates.append((prev_scan_fi,average_scan_r))
+                    
+                    prev_scan_fi = fi
+                    sum_scan_r = r
+                    num_scan_r = 1
+                else:
+                    sum_scan_r += r
+                    num_scan_r += 1
+            
+            value_dict = dict(new_scan_coordinates)
+            for i, new in enumerate(scan_list):
+                if new[0] in value_dict:
+                    scan_list[i] = (new[0],value_dict[new[0]])
+                            
+            new_dist = [r for (fi,r) in scan_list]
+        ################################################################################################ 
+            dif_count = 0   
+            for i in range(len(base_distance)):
+                if dif_count == 6:
+                    break
+                if base_distance[i] - new_dist[i] > 80:
+                    dif_count += 1
+                else:
+                    dif_count = 0
+    
+            if dif_count == 6:
                 for x,y in scan_print:
-                    pygame.draw.circle(screen,red,(int((width/2)+x),int((height/2)+y)),1) 
+                    pygame.draw.circle(screen,red,(int((width/2)+x),int((height/2)+y)),1)               
+            else:
+                for x,y in scan_print:
+                    pygame.draw.circle(screen,white,(int((width/2)+x),int((height/2)+y)),1)
+        ######################################################################################  
             #EXIT
             if back_button.draw(screen):
                 lidar.stop()
@@ -376,7 +380,7 @@ if __name__ == "__main__":
                 lidar.set_motor_pwm(0)
                 lidar.disconnect()
                 lets_continue = False
-            
+
             pygame.display.update()
                     
         for event in pygame.event.get():
