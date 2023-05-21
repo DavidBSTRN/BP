@@ -5,12 +5,12 @@ import button
 import os
 from math import sin,cos,radians
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
+import RPi.GPIO as GPIO
 
 def one_scan(): #take an area scan and retrun polar coordinates,then disconnect lidar
-    #connect lidar
+    #connect lidar a start scan
     lidar = PyRPlidar()
     lidar.connect(port="/dev/ttyUSB0", baudrate=256000  , timeout=3) 
     
@@ -140,6 +140,12 @@ if __name__ == "__main__":
     seventh_quadrant = False
     eighth_quadrant = False
     
+    #GPIO
+    GPIO.setwarnings(False)
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(18, GPIO.OUT)
+    
     #main pygame loop
     while lets_continue:
         if state == "default":
@@ -258,7 +264,7 @@ if __name__ == "__main__":
                     #after 720 iters    
                     if count == 720:
                         break
-                base_list = [(x/2,240) for x in range(0,720)]#full angle list
+                base_list = [(x/2,3000) for x in range(0,720)]#full angle list
                         #print(base_list)
                 base_coordinates = sorted(base_coordinates_fix, key = lambda tup: tup[0])#sorted coords low to high
                 base_print = [(int(r/print_scale * cos(radians(fi))),int(r/print_scale * sin(radians(fi)))) for (fi,r) in base_coordinates]#kartezians cause of print
@@ -292,7 +298,7 @@ if __name__ == "__main__":
                 #print(base_list)
                         #base distances - MOZNA PREDELAT
                 base_distance = [r for (fi,r) in base_list]
-                #print(base_distance)
+                print(base_distance)
                 #stop scna and go next
                 lidar.stop()
                 lidar.set_motor_pwm(0)
@@ -397,7 +403,7 @@ if __name__ == "__main__":
                                 
                 scan_generator = lidar.start_scan_express(0)
                 
-                scan_list = [(x/2,240) for x in range(0,720)]
+                scan_list = [(x/2,3000) for x in range(0,720)]
                 
                 state = "object_scan"
                 
@@ -510,9 +516,13 @@ if __name__ == "__main__":
                     dif_count = 0
     
             if dif_count == 6:
+                GPIO.output(18,False)
+                print("on")
                 for x,y in scan_print:
                     pygame.draw.circle(screen,red,(int((width/2)+x),int((height/2)+y)),1)               
             else:
+                GPIO.output(18,True)
+                print("off")
                 for x,y in scan_print:
                     pygame.draw.circle(screen,white,(int((width/2)+x),int((height/2)+y)),1)
         ######################################################################################  
@@ -590,9 +600,13 @@ if __name__ == "__main__":
                 cluster_size = len(cluster)
                 
                 if 4 < cluster_size < 10:
+                    GPIO.output(18,False)
+                    print("on")
                     for x,y in cluster_print: 
                         pygame.draw.circle(screen,red,(int((width/2)+x),int((height/2)+y)),1)                    
                 else:
+                    GPIO.output(18,True)
+                    print("off")
                     for x,y in cluster_print: 
                         pygame.draw.circle(screen,white,(int((width/2)+x),int((height/2)+y)),1)
             
