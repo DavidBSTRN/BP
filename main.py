@@ -143,8 +143,8 @@ if __name__ == "__main__":
     #GPIO
     GPIO.setwarnings(False)
 
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(18, GPIO.OUT)
+    GPIO.setmode(GPIO.BCM) #refer to the GPIO by number
+    GPIO.setup(18, GPIO.OUT) #set GPIO18 as output
     
     #main pygame loop
     while lets_continue:
