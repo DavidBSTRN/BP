@@ -10,7 +10,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
 def one_scan(): #take an area scan and retrun polar coordinates,then disconnect lidar
-    #connect lidar a start scan
+    #connect lidar
     lidar = PyRPlidar()
     lidar.connect(port="/dev/ttyUSB0", baudrate=256000  , timeout=3) 
     
