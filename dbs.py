@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-    
+#test of DBSCAN - plot clusters in different colors    
 if __name__ == "__main__":
 		
 	with open('two_people.pkl', 'rb') as f:
@@ -37,18 +37,18 @@ if __name__ == "__main__":
 	#print(one_center)
 	#print(two_size)
 	
-#	plt.scatter(X[labels == 0,0], X[labels == 0,1], s = 5, c = "black")
-#	plt.scatter(X[labels == 1,0], X[labels == 1,1], s = 5, c = "black")
-#	plt.scatter(X[labels == 2,0], X[labels == 2,1], s = 5, c = "green")
-#	plt.scatter(X[labels == 3,0], X[labels == 3,1], s = 5, c = "black")
-#	plt.scatter(X[labels == 4,0], X[labels == 4,1], s = 5, c = "black")
-#	plt.scatter(X[labels == 5,0], X[labels == 5,1], s = 5, c = "blue")
-#	plt.scatter(X[labels == 6,0], X[labels == 6,1], s = 5, c = "black")	
-#	plt.scatter(X[labels == 7,0], X[labels == 7,1], s = 5, c = "black")
-#	plt.scatter(X[labels == 8,0], X[labels == 8,1], s = 5, c = "black")
-#	plt.scatter(X[labels == 9,0], X[labels == 9,1], s = 5, c = "black" )
+	plt.scatter(X[labels == 0,0], X[labels == 0,1], s = 5, c = "black")
+	plt.scatter(X[labels == 1,0], X[labels == 1,1], s = 5, c = "black")
+	plt.scatter(X[labels == 2,0], X[labels == 2,1], s = 5, c = "green")
+	plt.scatter(X[labels == 3,0], X[labels == 3,1], s = 5, c = "black")
+	plt.scatter(X[labels == 4,0], X[labels == 4,1], s = 5, c = "black")
+	plt.scatter(X[labels == 5,0], X[labels == 5,1], s = 5, c = "blue")
+	plt.scatter(X[labels == 6,0], X[labels == 6,1], s = 5, c = "black")	
+	plt.scatter(X[labels == 7,0], X[labels == 7,1], s = 5, c = "black")
+	plt.scatter(X[labels == 8,0], X[labels == 8,1], s = 5, c = "black")
+	plt.scatter(X[labels == 9,0], X[labels == 9,1], s = 5, c = "black" )
 					
-#	plt.show()
+	plt.show()
 	
 	
 	
