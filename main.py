@@ -15,7 +15,7 @@ def one_scan(): #take an area scan and retrun polar coordinates,then disconnect 
     lidar.connect(port="/dev/ttyUSB0", baudrate=256000  , timeout=3) 
     
     coordinates = []
-                                
+    #start spin                            
     lidar.set_motor_pwm(660)
     time.sleep(2)
                                 
@@ -26,10 +26,10 @@ def one_scan(): #take an area scan and retrun polar coordinates,then disconnect 
         quality = scan.quality
         angle = scan.angle
         distance = scan.distance
-        # fixne na 3 metry - PREDELAT PAK                        
-        if distance < 3000 and quality != 0:#dane na 3 metry kvuli testum v pokoji - PREDELAT
+        #ignore low quality data and take points                       
+        if distance < 3000 and quality != 0:#max range 3 m
             
-            new_distance = distance#/12.5#240 pixlu je max co se vejde 3000/12.5 = 240 - PREDELAT       
+            new_distance = distance       
                                     
             coordinates.append((angle,new_distance))
 
@@ -45,7 +45,7 @@ def one_scan(): #take an area scan and retrun polar coordinates,then disconnect 
     lidar.disconnect()
     return sort_coordinates
     
-def round_half(coord):
+def round_half(coord):#round angle to the closest half
     fi,r = coord
     return (round(fi * 2) / 2, r)
 
@@ -57,8 +57,8 @@ if __name__ == "__main__":
     #window
     width = 800
     height = 480
-    #screen = pygame.display.set_mode((width,height),pygame.FULLSCREEN)
-    screen = pygame.display.set_mode((width,height))
+    #screen = pygame.display.set_mode((width,height),pygame.FULLSCREEN)#Fulscreen - display
+    screen = pygame.display.set_mode((width,height))#for pc
     
     #colours
     black = (0,0,0)
@@ -148,6 +148,7 @@ if __name__ == "__main__":
     
     #main pygame loop
     while lets_continue:
+	#first state
         if state == "default":
             screen.fill(black)
             screen.blit(menu_text,menu_text_rect)#start txt
@@ -162,21 +163,21 @@ if __name__ == "__main__":
                 lets_continue = False 
             
             pygame.display.update()
-
+	#choose safe zone
         if state == "distance":
             screen.fill(black)
-            default_print = [(int(r/12.5 * cos(radians(fi))),int(r/12.5 * sin(radians(fi)))) for (fi,r) in default_coordinates]#kartezian cause of print
-                
+            default_print = [(int(r/12.5 * cos(radians(fi))),int(r/12.5 * sin(radians(fi)))) for (fi,r) in default_coordinates]#cartesian cause of print
+            #3 m zone    
             if big_circle_button.draw(screen):
                 print_scale = 3000/240
                 dist_scale = 3000
                 state = "settings"
-            
+            #2 m zone
             if middle_circle_button.draw(screen):
                 print_scale = 2000/240
                 dist_scale = 2000
                 state = "settings"
-            
+            #1 m zone
             if small_circle_button.draw(screen):
                 print_scale = 1000/240
                 dist_scale = 1000
@@ -193,7 +194,7 @@ if __name__ == "__main__":
             
             for x,y in default_print:
                 pygame.draw.circle(screen,green,(int((width/2)+x),int((height/2)+y)),1)
-            
+            #drawing zones
             pygame.draw.circle(screen,white,(int(width/2),int(height/2)),240,1)
             pygame.draw.circle(screen,white,(int(width/2),int(height/2)),160,1)
             pygame.draw.circle(screen,white,(int(width/2),int(height/2)),80,1)
@@ -203,7 +204,7 @@ if __name__ == "__main__":
         if state == "settings":
             screen.fill(black)
             
-            default_print = [(int(r/print_scale * cos(radians(fi))),int(r/print_scale * sin(radians(fi)))) for (fi,r) in default_coordinates]
+            default_print = [(int(r/print_scale * cos(radians(fi))),int(r/print_scale * sin(radians(fi)))) for (fi,r) in default_coordinates]#points for print with zone scale
             
             if back_button.draw(screen):
                 state = "distance"
@@ -225,16 +226,16 @@ if __name__ == "__main__":
                 time.sleep(2)
                                 
                 scan_generator = lidar.start_scan_express(0)
-                
+                #for every data packet takes dist,angle
                 for count,scan in enumerate(scan_generator()):
                         
                     base_quality = scan.quality
                     base_angle = scan.angle
                     base_distance = scan.distance
                                     
-                    if base_distance < dist_scale and base_quality != 0:# 3 metry - PREDELAT
+                    if base_distance < dist_scale and base_quality != 0:
                         
-                        new_base_distance = base_distance#/12.5 #-PREDELAT
+                        new_base_distance = base_distance
                         #add just points user wants
                         if first_quadrant == False:
                             if 0 <= base_angle <= 44:
@@ -265,12 +266,12 @@ if __name__ == "__main__":
                     if count == 720:
                         break
                 base_list = [(x/2,3000) for x in range(0,720)]#full angle list
-                        #print(base_list)
+                  
                 base_coordinates = sorted(base_coordinates_fix, key = lambda tup: tup[0])#sorted coords low to high
-                base_print = [(int(r/print_scale * cos(radians(fi))),int(r/print_scale * sin(radians(fi)))) for (fi,r) in base_coordinates]#kartezians cause of print
+                base_print = [(int(r/print_scale * cos(radians(fi))),int(r/print_scale * sin(radians(fi)))) for (fi,r) in base_coordinates]#cartesian cause of print
                         
                 round_coords = [round_half(coord) for coord in base_coordinates]#round coord to the closest half
-                        #take list of tuples, do average of R for values with same Fi and create new list with lookes like [(fi1,r1),(fi2,r)...] 
+                #take list of tuples, do average of R for values with same Fi and create new list looks like [(fi1,r1),(fi2,r)...] 
                 base_sort_coordinates = []
                 prev_fi = None
                 sum_r = 0
@@ -288,16 +289,14 @@ if __name__ == "__main__":
                     else:
                         sum_r += r
                         num_r += 1
-                        
-                #print(base_sort_coordinates)
+                       
                 #change dist in tuples with same angle
                 diction = dict(base_sort_coordinates)
                 for i, dist in enumerate(base_list):
                     if dist[0] in diction:
                         base_list[i] = (dist[0],diction[dist[0]])                        
-                #print(base_list)
-                        #base distances - MOZNA PREDELAT
-                base_distance = [r for (fi,r) in base_list]
+
+                base_distance = [r for (fi,r) in base_list]#just distances for every point for comparation
                 print(base_distance)
                 #stop scna and go next
                 lidar.stop()
@@ -388,13 +387,13 @@ if __name__ == "__main__":
                 
             pygame.display.update()
 
-        if state == "scan_modes":#add comms 
+        if state == "scan_modes":#choose mode 
         
             screen.fill(black)
             screen.blit(obj_text,obj_text_rect)
             screen.blit(prsn_text,prsn_text_rect)
             
-            if start_object_det_button.draw(screen):                
+            if start_object_det_button.draw(screen): #start lidar and scan               
                 lidar = PyRPlidar()
                 lidar.connect(port="/dev/ttyUSB0", baudrate=256000  , timeout=3)
                                 
@@ -407,7 +406,7 @@ if __name__ == "__main__":
                 
                 state = "object_scan"
                 
-            if start_person_det_button.draw(screen):
+            if start_person_det_button.draw(screen): #start lidar and scan
                 K = np.array(base_coordinates)
                 K = StandardScaler().fit_transform(K)
 	
@@ -432,7 +431,7 @@ if __name__ == "__main__":
             
             pygame.display.update()
             
-        if state == "object_scan":#add comms
+        if state == "object_scan":#detection by distance
             
             screen.fill(black)
             #scan and adding points to coordintase
@@ -475,7 +474,7 @@ if __name__ == "__main__":
                             
                 if count == 720:
                     break
-            #sort        
+            #same sorting like base distance        
             sort_scan_coordinates = sorted(scan_coordinates, key = lambda tup: tup[0])
             scan_print = [(int(r/print_scale * cos(radians(fi))),int(r/print_scale * sin(radians(fi)))) for (fi,r) in sort_scan_coordinates]
 
@@ -506,7 +505,7 @@ if __name__ == "__main__":
                             
             new_dist = [r for (fi,r) in scan_list]
         ################################################################################################ 
-            dif_count = 0   
+            dif_count = 0   #counting diff points in row
             for i in range(len(base_distance)):
                 if dif_count == 6:
                     break
@@ -515,12 +514,12 @@ if __name__ == "__main__":
                 else:
                     dif_count = 0
     
-            if dif_count == 6:
+            if dif_count == 6: #new object detect
                 GPIO.output(18,False)
                 print("on")
                 for x,y in scan_print:
                     pygame.draw.circle(screen,red,(int((width/2)+x),int((height/2)+y)),1)               
-            else:
+            else: 
                 GPIO.output(18,True)
                 print("off")
                 for x,y in scan_print:
