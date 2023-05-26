@@ -68,29 +68,29 @@ if __name__ == "__main__":
     
     #text default page
     menu_font = pygame.font.SysFont("dejavuserif", 20)    
-    menu_text = menu_font.render("Stiskni pro sken okoli", True, white, black)
+    menu_text = menu_font.render("Stisk pro sken okoli", True, white, black)
     menu_text_rect = menu_text.get_rect()
     menu_text_rect.center = (width//2, height//4)
     
     #modes text
     obj_font = pygame.font.SysFont("dejavuserif", 12)    
-    obj_text = menu_font.render("Default", True, white, black)
+    obj_text = menu_font.render("Mod - vzdalenosti", True, white, black)
     obj_text_rect = menu_text.get_rect()
-    obj_text_rect.center = (310, 180)
+    obj_text_rect.center = (280, 180)
     
     prsn_font = pygame.font.SysFont("dejavuserif", 12)    
-    prsn_text = menu_font.render("Cluster", True, white, black)
+    prsn_text = menu_font.render("Mod - clustering", True, white, black)
     prsn_text_rect = menu_text.get_rect()
-    prsn_text_rect.center = (550, 180)
+    prsn_text_rect.center = (530, 180)
     
     #info txt
-    info_font = pygame.font.SysFont("dejavuserif", 12) 
+    info_font = pygame.font.SysFont("dejavuserif", 14) 
        
-    dist_text = info_font.render("Distance text info", True, white, black)
+    dist_text = info_font.render("Stisknutim ikony krizku bude zvolena velikost bezpecnostni zony (3m,2m,1m)", True, white, black)
     dist_text_rect = dist_text.get_rect()
     dist_text_rect.center = (width//2, height//4)
     
-    set_text = info_font.render("Sett text info", True, white, black)
+    set_text = info_font.render("Stisknutim ikony krizku bude dana oblast behem skenu ignorovana(bila-skenovani;cervena-ignorovana)", True, white, black)
     set_text_rect = set_text.get_rect()
     set_text_rect.center = (width//2, height//4)
         
@@ -297,7 +297,6 @@ if __name__ == "__main__":
                         base_list[i] = (dist[0],diction[dist[0]])                        
 
                 base_distance = [r for (fi,r) in base_list]#just distances for every point for comparation
-                print(base_distance)
                 #stop scna and go next
                 lidar.stop()
                 lidar.set_motor_pwm(0)
